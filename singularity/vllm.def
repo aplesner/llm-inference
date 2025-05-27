@@ -1,0 +1,44 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:24.01-py3
+
+%post
+    # Update and install system dependencies
+    # apt-get update && apt-get install -y \
+    #     git \
+    #     wget \
+    #     curl \
+    #     vim \
+    #     htop \
+    #     && apt-get clean \
+    #     && rm -rf /var/lib/apt/lists/*
+    
+    # Install vLLM and dependencies
+    pip install vllm>=0.8.2 \
+        transformers \
+        accelerate \
+        optree>=0.13.0 
+
+    # Fix CUDA library symlink
+    ln -sf /usr/local/cuda/compat/lib.real/libcuda.so.1 /usr/local/cuda/compat/lib.real/libcuda.so
+    
+    # Ensure library path includes the real directory
+    echo "/usr/local/cuda/compat/lib.real" >> /etc/ld.so.conf.d/cuda.conf
+    ldconfig
+    
+%environment
+    export CUDA_VISIBLE_DEVICES=0,1,2,3
+    export TOKENIZERS_PARALLELISM=false
+    # export HF_HOME=/opt/hf_cache
+    export VLLM_WORKER_MULTIPROC_METHOD=spawn
+    export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+    # export LD_LIBRARY_PATH="/usr/local/cuda/compat/lib.real:$LD_LIBRARY_PATH"
+
+%help
+    vLLM inference container.
+    Usage: singularity run vllm_inference.sif inference_script.py
+    
+    The container includes:
+    - vLLM optimized for multi-GPU inference
+    - Optimized environment variables for GPU usage
+    
+    Mount your data directory with: --bind /path/to/data:/workspace
