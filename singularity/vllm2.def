@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/cuda-dl-base:25.03-cuda12.8-devel-ubuntu24.04
+
+%post
+    # Set a default working directory
+    mkdir /app
+    cd /app
+
+    apt-get update
+    apt-get install -y --no-install-recommends python3-pip python3-dev  git 
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # Fix CUDA library symlink for compatibility
+    # echo "Fixing CUDA library symlink..."
+    # ln -sf /usr/local/cuda/compat/lib.real/libcuda.so.1 /usr/local/cuda/compat/lib.real/libcuda.so
+
+    # Install base Python packages
+    echo "Installing Python packages..."
+    # pip install --upgrade pip optree>=0.13.0
+    pip install --no-cache-dir --break-system-packages uv
+    uv pip install --no-cache-dir --system --break-system-packages \
+        transformers \
+        datasets \
+        accelerate \
+        vllm==0.8.5
+
+%environment
+    # Set environment variables if needed
+    # Example:
+    # export MY_VARIABLE="my_value"
+

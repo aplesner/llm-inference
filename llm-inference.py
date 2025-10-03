@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Minimal vLLM inference script with GPU optimization best practices
-"""
-
 import json
 import argparse
 from vllm import LLM, SamplingParams
